@@ -5,4 +5,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py deploy.sh /app/
 RUN chmod +x deploy.sh
 EXPOSE 5000
-CMD ["python","app.py"]
+CMD ["python3","app.py"]
