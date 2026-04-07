@@ -1,7 +1,7 @@
-# app.pyfrom flask import Flask, request, send_file
+from flask import Flask, request, send_file 
+
 from PIL import Image
 import io
-
 app = Flask(__name__)
 
 # --- Image processing function ---
