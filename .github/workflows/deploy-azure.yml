@@ -1,0 +1,44 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/cartoon-service:latest .
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/cartoon-service:latest
+
+  deploy-to-aci:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Container Instances
+        uses: azure/aci-deploy@v1
+        with:
+          resource-group: cartoon-rg
+          name: cartoon-service-aci
+          image: ${{ secrets.ACR_LOGIN_SERVER }}/cartoon-service:latest
+          ports: 5000
+          ip-address-type: Public
+          location: eastus
+          cpu: 1
+          memory: 1.5
